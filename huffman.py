@@ -71,10 +71,27 @@ def huffman_decode(encoded_data, codes):
 
     return decoded_output
 
-def save_codes(codes, file_path):
-    with open(file_path, 'w') as f:
-        json.dump(codes, f)
+# def save_codes(codes, file_path):
+#     with open(file_path, 'w') as f:
+#         json.dump(codes, f)
+#
+# def load_codes(file_path):
+#     with open(file_path, 'r') as f:
+#         return json.load(f)
+def save_codes(codes, file):
+    """Сохраняет коды в бинарном формате в файл."""
+    json_data = json.dumps(codes)
+    byte_data = json_data.encode('utf-8')
+    # Сохраняем длину кода и сами коды
+    file.write(len(byte_data).to_bytes(4, byteorder='big'))  # Длина кодов
+    file.write(byte_data)
 
-def load_codes(file_path):
-    with open(file_path, 'r') as f:
-        return json.load(f)
+def load_codes(file):
+    """Загружает коды из бинарного файла."""
+    # Считываем длину кодов
+    length_bytes = file.read(4)
+    length = int.from_bytes(length_bytes, byteorder='big')  # Получаем длину
+
+    # Считываем коды
+    json_data = file.read(length).decode('utf-8')
+    return json.loads(json_data)
