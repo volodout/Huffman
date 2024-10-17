@@ -1,5 +1,5 @@
 import pickle
-from build_tree import build_tree
+from _old_build_tree import build_tree
 
 
 def build_codes(node, prefix="", codebook={}):

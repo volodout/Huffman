@@ -1,9 +1,10 @@
 import argparse
-from funcs_decoding import *
+from _old_funcs_decoding import *
+from _old_funcs_encoding import *
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Huffman")
+    parser = argparse.ArgumentParser()
     parser.add_argument("mode", choices=["encode", "decode"], help="Mode: encode or decode")
     parser.add_argument("input", help="Input file path")
     parser.add_argument("output", help="Output file path")

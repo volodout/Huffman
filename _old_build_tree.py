@@ -1,6 +1,6 @@
 import heapq
 from collections import defaultdict
-from node import Node
+from _old_ import Node
 
 
 def build_tree(text):
