@@ -22,29 +22,13 @@ def bytes_to_bits(byte_data):
     return bits
 
 
-# def compress_file(input_file, output_file):
-#     data = read_file(input_file)
-#     encoded_data, codes = huffman_encode(data.decode('utf-8', errors='ignore'))
-#
-#     # Конвертируем биты в байты
-#     byte_data = bits_to_bytes(encoded_data)
-#     write_file(output_file, byte_data)
-#
-#     # Сохранение кодов в отдельный файл
-#     codes_file = output_file + '.codes'
-#     save_codes(codes, codes_file)
-#
-#     original_metadata = get_file_metadata(input_file)
-#     restore_file_metadata(original_metadata, output_file)
-#
-#     print(f'Файл "{input_file}" успешно сжат в "{output_file}" с кодами в "{codes_file}"')
 def compress_file(input_file, output_encoded_file):
     if output_encoded_file is None:
         output_encoded_file = input_file + '.huff'
     elif not output_encoded_file.endswith('.huff'):
         output_encoded_file += '.huff'
     data = read_file(input_file)
-    encoded_data, codes = huffman_encode(data.decode('utf-8', errors='ignore'))
+    encoded_data, codes = huffman_encode(data)
 
     byte_data = bits_to_bytes(encoded_data)
 
@@ -60,23 +44,6 @@ def compress_file(input_file, output_encoded_file):
     print(f'Файл "{input_file}" успешно сжат в "{output_encoded_file}"')
 
 
-# def decompress_file(input_file, output_file):
-#     byte_data = read_file(input_file)
-#
-#     # Конвертируем байты в биты
-#     encoded_data = bytes_to_bits(byte_data)
-#
-#     # Загрузка кодов из файла
-#     codes_file = input_file + '.codes'
-#     codes = load_codes(codes_file)
-#
-#     decoded_data = huffman_decode(encoded_data, codes)
-#     write_file(output_file, decoded_data.encode('utf-8'))
-#
-#     original_metadata = get_file_metadata(input_file)
-#     restore_file_metadata(original_metadata, output_file)
-#
-#     print(f'Файл "{input_file}" успешно распакован в "{output_file}"')
 def decompress_file(encoded_input_file, decoded_output_file):
     if not decoded_output_file:
         decoded_output_file = encoded_input_file.replace('.huff', '')
@@ -92,12 +59,13 @@ def decompress_file(encoded_input_file, decoded_output_file):
         codes = load_codes(f)
 
         decoded_data = huffman_decode(encoded_data, codes)
-        write_file(decoded_output_file, decoded_data.encode('utf-8'))
+        write_file(decoded_output_file, decoded_data)
 
         original_metadata = get_file_metadata(encoded_input_file)
         restore_file_metadata(original_metadata, decoded_output_file)
 
         print(f'Файл "{encoded_input_file}" успешно распакован в "{decoded_output_file}"')
+
 
 def create_filename_to_decompress(filename):
     count = 1
@@ -120,13 +88,9 @@ def main():
     group.add_argument('-c', '--compress', type=str, metavar='input', help='Сжать файл', required=False)
     group.add_argument('-d', '--decompress', type=str, metavar='input', help='Распаковать файл', required=False)
 
-    # Выходной файл только для распаковки
-    parser.add_argument('output', type=str, nargs='?', default=None,
-                        help='Выходной файл для распаковки (по умолчанию: output.txt)')
-
+    parser.add_argument('output', type=str, nargs='?', default=None, help='Выходной файл для распаковки')
 
     args = parser.parse_args()
-
 
     if args.decompress and not args.decompress.endswith('.huff'):
         raise ValueError('Архивированный файл должен иметь расширение .huff')
