@@ -1,7 +1,4 @@
-# huffman.py
-
 import heapq
-import os
 import json
 from collections import defaultdict
 
@@ -18,11 +15,9 @@ class HuffmanNode:
 def build_huffman_tree(data):
     frequency = defaultdict(int)
 
-    # Подсчет частоты символов
     for char in data:
         frequency[char] += 1
 
-    # Создание приоритетной очереди
     heap = [HuffmanNode(char, freq) for char, freq in frequency.items()]
     heapq.heapify(heap)
 
@@ -34,7 +29,7 @@ def build_huffman_tree(data):
         merged.right = right
         heapq.heappush(heap, merged)
 
-    return heap[0]  # Возвращаем корень дерева
+    return heap[0]
 
 def build_codes(node, current_code="", codes={}):
     if node is None:
@@ -79,19 +74,14 @@ def huffman_decode(encoded_data, codes):
 #     with open(file_path, 'r') as f:
 #         return json.load(f)
 def save_codes(codes, file):
-    """Сохраняет коды в бинарном формате в файл."""
     json_data = json.dumps(codes)
     byte_data = json_data.encode('utf-8')
-    # Сохраняем длину кода и сами коды
     file.write(len(byte_data).to_bytes(4, byteorder='big'))  # Длина кодов
     file.write(byte_data)
 
 def load_codes(file):
-    """Загружает коды из бинарного файла."""
-    # Считываем длину кодов
     length_bytes = file.read(4)
     length = int.from_bytes(length_bytes, byteorder='big')  # Получаем длину
 
-    # Считываем коды
     json_data = file.read(length).decode('utf-8')
     return json.loads(json_data)
