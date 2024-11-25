@@ -22,7 +22,7 @@ def bytes_to_bits(byte_data):
     return bits
 
 
-def compress_file(input_file, output_encoded_file):
+def compress_file(input_file, output_encoded_file, verbose: bool):
     if output_encoded_file is None:
         output_encoded_file = input_file + '.huff'
     elif not output_encoded_file.endswith('.huff'):
@@ -42,6 +42,12 @@ def compress_file(input_file, output_encoded_file):
     restore_file_metadata(original_metadata, output_encoded_file)
 
     print(f'Файл "{input_file}" успешно сжат в "{output_encoded_file}"')
+
+    if verbose:
+        original_size = os.path.getsize(input_file)
+        compressed_size = os.path.getsize(output_encoded_file)
+        compression_ratio = 100 * (1 - compressed_size / original_size)
+        print(f"Файл сжат на {compression_ratio:.2f}%")
 
 
 def decompress_file(encoded_input_file, decoded_output_file):
@@ -90,13 +96,15 @@ def main():
 
     parser.add_argument('output', type=str, nargs='?', default=None, help='Выходной файл для распаковки')
 
+    parser.add_argument('-v', '--verbose', action='store_true', help='Показать процент сжатия')
+
     args = parser.parse_args()
 
     if args.decompress and not args.decompress.endswith('.huff'):
         raise ValueError('Архивированный файл должен иметь расширение .huff')
 
     if args.compress:
-        compress_file(args.compress, args.output)
+        compress_file(args.compress, args.output, args.verbose)
     elif args.decompress:
         decompress_file(args.decompress, args.output)
     else:
@@ -108,7 +116,7 @@ if __name__ == '__main__':
 
 
 # контроль целостности
-# прогресс бары
+# прогресс бары +
 # тесты
 # архивировать несколько файлов
 # директории
