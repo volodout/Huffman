@@ -18,6 +18,12 @@ def compress_file(input_file: str, output_encoded_file: str, verbose: bool):
         output_encoded_file += '.huff'
 
     data = read_file(input_file)
+    if not data:
+        with open(output_encoded_file, 'wb') as f:
+            f.write(b'\x00')
+        print(f'Файл "{input_file}" успешно сжат (пустой файл)')
+        return
+
     checksum = calculate_checksum(data)
 
     encoded_data, codes = huffman_encode(data)
@@ -39,8 +45,11 @@ def compress_file(input_file: str, output_encoded_file: str, verbose: bool):
     if verbose:
         original_size = os.path.getsize(input_file)
         compressed_size = os.path.getsize(output_encoded_file)
-        compression_ratio = 100 * (1 - compressed_size / original_size)
-        print(f"Файл сжат на {compression_ratio:.2f}%")
+        if compressed_size >= original_size:
+            print("Сжатие неэффективно, размер файла увеличился.")
+        else:
+            compression_ratio = 100 * (1 - compressed_size / original_size)
+            print(f"Файл сжат на {compression_ratio:.2f}%")
 
 
 def decompress_file(encoded_input_file: str, decoded_output_file: str):
@@ -49,12 +58,19 @@ def decompress_file(encoded_input_file: str, decoded_output_file: str):
     decoded_output_file = create_filename_to_decompress(decoded_output_file)
 
     with open(encoded_input_file, 'rb') as f:
-        bit_length = struct.unpack('>I', f.read(4))[0]  # Длина битов
-        stored_checksum = f.read(32)  # Контрольная сумма
+        bit_length = None
+        try:
+            bit_length = struct.unpack('>I', f.read(4))[0]
+        except struct.error as e:
+            write_file(decoded_output_file, b'')
+            print(f'Файл "{encoded_input_file}" успешно распакован (пустой файл)')
+            return
+
+        stored_checksum = f.read(32)
 
         encoded_bytes = f.read((bit_length + 7) // 8)
         encoded_int = int.from_bytes(encoded_bytes, byteorder='big')
-        encoded_data = bin(encoded_int)[2:].zfill(bit_length)  # Преобразуем в строку бит
+        encoded_data = bin(encoded_int)[2:].zfill(bit_length)
 
         codes = load_codes(f)
 
