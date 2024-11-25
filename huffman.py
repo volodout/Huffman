@@ -1,5 +1,6 @@
 import heapq
 from collections import defaultdict
+from tqdm import tqdm
 
 
 class HuffmanNode:
@@ -15,8 +16,10 @@ class HuffmanNode:
 
 def build_huffman_tree(data):
     frequency = defaultdict(int)
-    for byte in data:
-        frequency[byte] += 1
+    with tqdm(total=len(data), desc='Building tree') as pbar:
+        for byte in data:
+            pbar.update()
+            frequency[byte] += 1
 
     heap = [HuffmanNode(byte, freq) for byte, freq in frequency.items()]
     heapq.heapify(heap)
@@ -32,7 +35,9 @@ def build_huffman_tree(data):
     return heap[0]
 
 
-def build_codes(node, current_code="", codes={}):
+def build_codes(node, current_code="", codes=None):
+    if codes is None:
+        codes = {}
     if node is None:
         return
 
@@ -52,7 +57,13 @@ def huffman_encode(data):
     root = build_huffman_tree(data)
     codes = build_codes(root)
 
-    encoded_output = "".join(codes[byte] for byte in data)
+    encoded_data_list = []
+    with tqdm(total=len(data), desc="Encoding") as pbar:
+        for byte in data:
+            encoded_data_list.append(codes[byte])
+            pbar.update()
+
+    encoded_output = "".join(encoded_data_list)
     return encoded_output, codes
 
 
@@ -61,11 +72,13 @@ def huffman_decode(encoded_data, codes):
     current_code = ""
     decoded_output = bytearray()
 
-    for bit in encoded_data:
-        current_code += bit
-        if current_code in reversed_codes:
-            decoded_output.append(reversed_codes[current_code])
-            current_code = ""
+    with tqdm(total=len(encoded_data), desc="Decoding") as pbar:
+        for bit in encoded_data:
+            current_code += bit
+            if current_code in reversed_codes:
+                decoded_output.append(reversed_codes[current_code])
+                current_code = ""
+            pbar.update()
 
     return bytes(decoded_output)
 
